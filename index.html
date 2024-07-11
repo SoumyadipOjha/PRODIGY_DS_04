@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Solver</title>
+<style>body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(to right, #74ebd5, #ACB6E5);
+    margin: 0;
+    color: #333;
+}
+
+.container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 350px;
+}
+
+h1 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.sudoku-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-gap: 2px;
+}
+
+.sudoku-cell {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ccc;
+    text-align: center;
+    line-height: 30px;
+    font-size: 1.2em;
+}
+
+button {
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+@media (max-width: 400px) {
+    .container {
+        width: 90%;
+    }
+
+    .sudoku-cell {
+        width: 25px;
+        height: 25px;
+        line-height: 25px;
+    }
+}
+</style></head>
+<body>
+    <div class="container">
+        <h1>Sudoku Solver</h1>
+        <div id="sudoku-grid" class="sudoku-grid">
+            <!-- Sudoku grid will be generated here -->
+        </div>
+        <button onclick="solveSudoku()">Solve Sudoku</button>
+    </div>
+    <script >
+        document.addEventListener('DOMContentLoaded', () => {
+    generateSudokuGrid();
+});
+
+function generateSudokuGrid() {
+    const grid = document.getElementById('sudoku-grid');
+    for (let i = 0; i < 81; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'sudoku-cell';
+        cell.contentEditable = true;
+        grid.appendChild(cell);
+    }
+}
+
+function getSudokuGrid() {
+    const cells = document.querySelectorAll('.sudoku-cell');
+    const grid = [];
+    let row = [];
+
+    cells.forEach((cell, index) => {
+        const value = cell.textContent.trim();
+        row.push(value === '' ? 0 : parseInt(value));
+        if ((index + 1) % 9 === 0) {
+            grid.push(row);
+            row = [];
+        }
+    });
+
+    return grid;
+}
+
+function setSudokuGrid(grid) {
+    const cells = document.querySelectorAll('.sudoku-cell');
+
+    grid.flat().forEach((value, index) => {
+        cells[index].textContent = value === 0 ? '' : value;
+    });
+}
+
+function isSafe(grid, row, col, num) {
+    for (let x = 0; x < 9; x++) {
+        if (grid[row][x] === num || grid[x][col] === num) {
+            return false;
+        }
+    }
+
+    const startRow = row - row % 3;
+    const startCol = col - col % 3;
+
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            if (grid[i + startRow][j + startCol] === num) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+function solveSudokuHelper(grid, row, col) {
+    if (row === 8 && col === 9) {
+        return true;
+    }
+
+    if (col === 9) {
+        row++;
+        col = 0;
+    }
+
+    if (grid[row][col] !== 0) {
+        return solveSudokuHelper(grid, row, col + 1);
+    }
+
+    for (let num = 1; num <= 9; num++) {
+        if (isSafe(grid, row, col, num)) {
+            grid[row][col] = num;
+            if (solveSudokuHelper(grid, row, col + 1)) {
+                return true;
+            }
+            grid[row][col] = 0;
+        }
+    }
+
+    return false;
+}
+
+function solveSudoku() {
+    const grid = getSudokuGrid();
+    if (solveSudokuHelper(grid, 0, 0)) {
+        setSudokuGrid(grid);
+    } else {
+        alert('No solution exists for the given Sudoku.');
+    }
+}
+
+    </script>
+</body>
+</html>
